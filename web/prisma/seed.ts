@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
 
@@ -95,11 +96,23 @@ async function main() {
     console.log('Iniciando seed...')
 
     // Limpiar base de datos
+    await prisma.user.deleteMany()
     await prisma.orderItem.deleteMany()
     await prisma.order.deleteMany()
     await prisma.product.deleteMany()
     await prisma.brand.deleteMany()
     await prisma.category.deleteMany()
+
+    // Crear Admin por defecto
+    const adminPassword = await bcrypt.hash('admin123', 10)
+    await prisma.user.create({
+        data: {
+            name: 'Admin XyloTech',
+            email: 'admin@xylotech.com',
+            password: adminPassword,
+            role: 'ADMIN'
+        }
+    })
 
     // Crear categorías
     for (const cat of categories) {

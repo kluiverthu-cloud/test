@@ -1,8 +1,8 @@
 import prisma from "@/lib/prisma"
 import { notFound } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Star, ShoppingCart, ArrowLeft, Truck, ShieldCheck } from "lucide-react"
+import { Star, ArrowLeft, Truck, ShieldCheck } from "lucide-react"
 import Link from "next/link"
+import { BuyButton } from "@/components/shop/BuyButton"
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -27,7 +27,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 <div className="space-y-4">
                     <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 flex items-center justify-center border shadow-sm aspect-square relative overflow-hidden group">
                         <div className="absolute inset-0 bg-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        {/* Placeholder SVG */}
                         <svg className="w-32 h-32 text-slate-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
                             <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
                             <circle cx="9" cy="9" r="2" />
@@ -56,7 +55,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                     <div className="flex items-center gap-4 mb-6">
                         <div className="flex text-amber-400">
                             {[1, 2, 3, 4, 5].map((s) => (
-                                <Star key={s} size={18} fill={s <= Math.round(product.rating) ? "currentColor" : "none"} className={s > Math.round(product.rating) ? "text-slate-200" : ""} />
+                                <Star key={s} size={18} fill={s <= Math.round(product.rating || 0) ? "currentColor" : "none"} className={s > Math.round(product.rating || 0) ? "text-slate-200" : ""} />
                             ))}
                         </div>
                         <span className="text-sm text-slate-500 font-medium">{product.reviewCount} reseñas verificadas</span>
@@ -75,7 +74,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
                     {/* Specs Grid */}
                     <div className="grid grid-cols-2 gap-4 mb-8">
-                        {product.specs && Object.entries(product.specs).map(([key, value]) => (
+                        {product.specs && Object.entries(product.specs as object).map(([key, value]) => (
                             <div key={key} className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                                 <span className="text-xs text-slate-500 uppercase font-bold tracking-wider block mb-1">{key}</span>
                                 <span className="font-semibold text-slate-900 dark:text-slate-200 capitalize">{String(value)}</span>
@@ -85,12 +84,12 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
                     <div className="flex flex-col gap-3 mb-8">
                         <div className="flex gap-4">
-                            <Button size="lg" className="w-full text-base h-12 rounded-xl bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25">
+                            <BuyButton className="w-full text-base h-12 rounded-xl bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25">
                                 Agregar al Carrito
-                            </Button>
-                            <Button size="lg" variant="outline" className="w-full text-base h-12 rounded-xl border-slate-300 dark:border-slate-700">
+                            </BuyButton>
+                            <BuyButton variant="outline" className="w-full text-base h-12 rounded-xl border-slate-300 dark:border-slate-700">
                                 Comprar Ahora
-                            </Button>
+                            </BuyButton>
                         </div>
                     </div>
 

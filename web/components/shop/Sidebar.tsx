@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Search, Home, ShoppingCart, Heart, Bell, Settings, Menu, Info, Phone, Download } from "lucide-react"
+import { useSession, signOut } from "next-auth/react"
+import { Search, Home, ShoppingCart, Heart, Bell, Settings, Menu, Info, Phone, Download, LogOut, User as UserIcon, LayoutDashboard, LogIn } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -12,6 +13,7 @@ import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
 
 export function Sidebar({ className }: { className?: string }) {
+    const { data: session } = useSession()
     const [categories, setCategories] = useState<any[]>([])
 
     useEffect(() => {
@@ -28,16 +30,33 @@ export function Sidebar({ className }: { className?: string }) {
                     <span className="text-primary">*</span> XyloTech
                 </div>
 
-                <div className="flex items-center gap-3 px-2 mb-8">
-                    <div className="h-10 w-10 rounded-full bg-slate-200 overflow-hidden">
-                        <img src="https://ui.shadcn.com/avatars/04.png" alt="User" className="h-full w-full object-cover" />
-                    </div>
+                <div className="flex items-center justify-between px-2 mb-8">
+                    {session ? (
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600">
+                                <UserIcon size={20} />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-sm font-bold truncate max-w-[100px]">{session.user?.name}</span>
+                                <button onClick={() => signOut()} className="text-[10px] text-red-500 hover:underline text-left">Cerrar Sesión</button>
+                            </div>
+                        </div>
+                    ) : (
+                        <Link href="/auth" className="w-full">
+                            <Button variant="outline" size="sm" className="w-full gap-2 rounded-xl">
+                                <LogIn size={16} /> Iniciar Sesión
+                            </Button>
+                        </Link>
+                    )}
                 </div>
 
                 <div className="space-y-1 mb-6">
                     <NavLink icon={<Home size={20} />} href="/" label="Home" active />
-                    <NavLink icon={<ShoppingCart size={20} />} href="/cart" label="Cart" />
-                    <NavLink icon={<Heart size={20} />} href="/profile/favorites" label="Favourite" />
+                    {session?.user?.role === 'ADMIN' && (
+                        <NavLink icon={<LayoutDashboard size={20} />} href="/admin/products" label="Panel Admin" />
+                    )}
+                    <NavLink icon={<ShoppingCart size={20} />} href="/cart" label="Carrito" />
+                    <NavLink icon={<Heart size={20} />} href="/profile/favorites" label="Favoritos" />
                     <NavLink icon={<Bell size={20} />} href="/notifications" label="Notification" />
                     <NavLink icon={<Settings size={20} />} href="/settings" label="Settings" />
                 </div>
