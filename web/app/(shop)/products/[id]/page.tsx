@@ -1,4 +1,4 @@
-import { products } from "@/lib/mock-data"
+import prisma from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Star, ShoppingCart, ArrowLeft, Truck, ShieldCheck } from "lucide-react"
@@ -6,7 +6,11 @@ import Link from "next/link"
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
-    const product = products.find((p) => p.id === id)
+
+    // Fetch product from Supabase using Prisma
+    const product: any = await prisma.product.findUnique({
+        where: { id }
+    })
 
     if (!product) {
         notFound()

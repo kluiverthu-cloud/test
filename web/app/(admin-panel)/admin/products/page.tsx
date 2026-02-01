@@ -9,11 +9,15 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Edit, Trash2, Plus, MoreHorizontal } from "lucide-react"
-import { products } from "@/lib/mock-data"
 import Link from "next/link"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu"
 
-export default function AdminProductsPage() {
+export default async function AdminProductsPage() {
+    const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/products`, {
+        cache: 'no-store'
+    })
+    const products = await response.json()
+
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
@@ -41,7 +45,7 @@ export default function AdminProductsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {products.map((product) => (
+                        {products.map((product: any) => (
                             <TableRow key={product.id}>
                                 <TableCell className="font-medium">
                                     <div className="flex flex-col">

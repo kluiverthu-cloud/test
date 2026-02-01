@@ -1,8 +1,8 @@
-# PRD: BasicTechShop
+# PRD: XyloTech
 
 ## 1. Resumen Ejecutivo
 
-**BasicTechShop** es una plataforma e-commerce especializada en productos de computación (hardware, periféricos y componentes). El sistema permite a los usuarios navegar, filtrar y comprar productos, mientras que los administradores gestionan el inventario, usuarios y pedidos.
+**XyloTech** es una plataforma e-commerce especializada en productos de computación (hardware, periféricos y componentes). El sistema permite a los usuarios navegar, filtrar y comprar productos, mientras que los administradores gestionan el inventario, usuarios y pedidos.
 
 | Aspecto | Detalle |
 |---------|---------|
@@ -90,10 +90,9 @@ PENDING → CONFIRMED → PROCESSING → SHIPPED → DELIVERED
 ```
 
 ### Métodos de Pago
-- Tarjeta (CARD)
+- Pago por QR (QR_PAYMENT)
 - Transferencia (TRANSFER)
-- Billetera digital (WALLET)
-- Contra entrega (CASH_ON_DELIVERY)
+- Pago en efectivo al retirar (CASH_ON_DELIVERY)
 
 ---
 
@@ -121,7 +120,7 @@ PENDING → CONFIRMED → PROCESSING → SHIPPED → DELIVERED
 | Addresses | CRUD en `/api/addresses` |
 | Users | `GET/POST /api/users` (admin) |
 | Admin | `GET /api/admin/dashboard`, `GET /api/admin/orders` |
-| Payments | `POST /api/checkout`, `POST /api/webhook/stripe` |
+| Payments | `POST /api/checkout/qr`, `POST /api/webhook/qr` |
 
 ---
 
@@ -170,5 +169,5 @@ ASUS, MSI, Corsair, Logitech, Razer, HyperX, Kingston, Samsung, LG, Dell, NVIDIA
 | 1. UI con datos mock | ✅ Completada | Layout, componentes, páginas con datos estáticos |
 | 2. Backend (Prisma/PostgreSQL) | 🔄 En progreso | Modelo de datos, API routes |
 | 3. Autenticación | Pendiente | NextAuth.js con credenciales |
-| 4. Integración de pagos | Pendiente | Stripe Checkout |
+| 4. Pagos por QR | Pendiente | Integración de generación de QR |
 | 5. Deploy y optimización | Pendiente | Vercel + PostgreSQL |

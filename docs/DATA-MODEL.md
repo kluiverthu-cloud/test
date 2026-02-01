@@ -1,4 +1,4 @@
-# Modelo de Datos - BasicTechShop
+# Modelo de Datos - XyloTech
 
 ## Resumen de Requisitos
 
@@ -124,7 +124,7 @@
 | subtotal | Decimal | Suma de items |
 | shipping | Decimal | Costo de envio |
 | total | Decimal | Total final |
-| paymentMethod | Enum | Metodo de pago usado |
+| paymentMethod | Enum | QR_PAYMENT, TRANSFER, CASH |
 | notes | String? | Notas adicionales |
 
 ### OrderItem (Items del Pedido)

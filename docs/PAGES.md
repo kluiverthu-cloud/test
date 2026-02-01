@@ -1,4 +1,4 @@
-# Listado de Paginas - BasicTechShop
+# Listado de Paginas - XyloTech
 
 ## Paginas Publicas (Shop)
 

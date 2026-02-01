@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Search, Home, ShoppingCart, Heart, Bell, Settings, Menu, Info, Phone, Download } from "lucide-react"
 
@@ -9,14 +10,22 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
-import { categories } from "@/lib/mock-data"
 
 export function Sidebar({ className }: { className?: string }) {
+    const [categories, setCategories] = useState<any[]>([])
+
+    useEffect(() => {
+        fetch('/api/categories')
+            .then(res => res.json())
+            .then(data => setCategories(data))
+            .catch(err => console.error("Error loading categories:", err))
+    }, [])
+
     return (
         <div className={cn("pb-12 h-screen border-r bg-background", className)}>
             <ScrollArea className="h-full py-6 pl-6 pr-6">
                 <div className="mb-6 flex items-center gap-2 font-bold text-xl px-2">
-                    <span className="text-primary">*</span> COMM-SIL
+                    <span className="text-primary">*</span> XyloTech
                 </div>
 
                 <div className="flex items-center gap-3 px-2 mb-8">

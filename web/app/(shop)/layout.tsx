@@ -16,7 +16,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
                         <Sidebar />
                     </SheetContent>
                 </Sheet>
-                <div className="font-bold">BasicTechShop</div>
+                <div className="font-bold">XyloTech</div>
             </div>
 
             {/* Desktop Sidebar */}

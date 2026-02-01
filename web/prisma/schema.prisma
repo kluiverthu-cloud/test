@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  name      String
+  role      Role      @default(CUSTOMER)
+  status    Status    @default(ACTIVE)
+  addresses Address[]
+  orders    Order[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String
+  slug     String    @unique
+  icon     String?
+  products Product[]
+  createdAt DateTime @default(now())
+}
+
+model Brand {
+  id       String    @id @default(cuid())
+  name     String
+  slug     String    @unique
+  logo     String?
+  products Product[]
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id           String      @id @default(cuid())
+  name         String
+  slug         String      @unique
+  description  String?
+  price        Decimal
+  comparePrice Decimal?
+  stock        Int         @default(0)
+  images       String[]
+  specs        Json?
+  isNew        Boolean     @default(false)
+  isFeatured   Boolean     @default(false)
+  isActive     Boolean     @default(true)
+  rating       Float       @default(0)
+  reviewCount  Int         @default(0)
+  category     Category    @relation(fields: [categoryId], references: [id])
+  categoryId   String
+  brand        Brand       @relation(fields: [brandId], references: [id])
+  brandId      String
+  orderItems   OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  label     String   // Casa, Oficina, etc.
+  name      String   // Destinatario
+  phone     String
+  address   String
+  city      String
+  state     String
+  zipCode   String
+  isDefault Boolean  @default(false)
+  orders    Order[]
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  orderNumber   String      @unique
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String
+  address       Address     @relation(fields: [addressId], references: [id])
+  addressId     String
+  items         OrderItem[]
+  status        OrderStatus @default(PENDING)
+  subtotal      Decimal
+  shipping      Decimal     @default(0)
+  total         Decimal
+  paymentMethod PaymentMethod @default(QR_PAYMENT)
+  notes         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  name      String  // Snapshot al momento de compra
+  price     Decimal
+  quantity  Int
+  total     Decimal
+}
+
+enum Role {
+  ADMIN
+  MODERATOR
+  CUSTOMER
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  QR_PAYMENT
+  TRANSFER
+  CASH_ON_DELIVERY
+}
