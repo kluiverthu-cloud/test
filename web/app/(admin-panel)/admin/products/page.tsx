@@ -12,6 +12,8 @@ import { Edit, Trash2, Plus, MoreHorizontal } from "lucide-react"
 import Link from "next/link"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu"
 
+import { DeleteProductButton } from "@/components/admin/DeleteProductButton"
+
 export default async function AdminProductsPage() {
     const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/products`, {
         cache: 'no-store'
@@ -60,7 +62,9 @@ export default async function AdminProductsPage() {
                                 </TableCell>
                                 <TableCell>${product.price}</TableCell>
                                 <TableCell className="hidden md:table-cell">{product.stock}</TableCell>
-                                <TableCell className="hidden md:table-cell capitalize">Computación</TableCell>
+                                <TableCell className="hidden md:table-cell capitalize">
+                                    {product.category?.name || "Sin categoría"}
+                                </TableCell>
                                 <TableCell className="text-right">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -71,12 +75,12 @@ export default async function AdminProductsPage() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                                            <DropdownMenuItem>
-                                                <Edit className="mr-2 h-4 w-4" /> Editar
+                                            <DropdownMenuItem asChild>
+                                                <Link href={`/admin/products/edit/${product.id}`} className="flex items-center">
+                                                    <Edit className="mr-2 h-4 w-4" /> Editar
+                                                </Link>
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem className="text-red-600">
-                                                <Trash2 className="mr-2 h-4 w-4" /> Eliminar
-                                            </DropdownMenuItem>
+                                            <DeleteProductButton productId={product.id} />
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>
