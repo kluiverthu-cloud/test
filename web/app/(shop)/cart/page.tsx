@@ -29,6 +29,15 @@ export default function CartPage() {
     const [isUploading, setIsUploading] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [qrImage, setQrImage] = useState("/uploads/shop-qr.png") // Default path
+    const [shippingDetails, setShippingDetails] = useState({
+        name: "",
+        phone: "",
+        address: "",
+        city: "",
+        state: "",
+        zipCode: ""
+    })
+    const isShippingValid = shippingDetails.name && shippingDetails.phone && shippingDetails.address && shippingDetails.city && shippingDetails.state
 
     const subtotal = totalPrice()
     // Simple 10% tax for demo, or 0.
@@ -42,6 +51,11 @@ export default function CartPage() {
             // Check if cart is empty
             if (items.length === 0) {
                 toast.error("El carrito está vacío")
+                return
+            }
+            if (!isShippingValid) {
+                toast.error("Por favor completa los datos de envío")
+                // Optionally scroll to form or highlight
                 return
             }
             setIsCheckoutOpen(true)
@@ -94,7 +108,7 @@ export default function CartPage() {
                     subtotal,
                     total,
                     paymentProof,
-                    // addressId could be selected in a previous step, ignoring for MVP
+                    shippingDetails
                 })
             })
 
@@ -196,7 +210,13 @@ export default function CartPage() {
                     ))}
                 </div>
 
-                <div className="lg:col-span-1">
+                <div className="lg:col-span-1 space-y-6">
+                    <ShippingForm
+                        details={shippingDetails}
+                        onChange={(e) => setShippingDetails(prev => ({ ...prev, [e.target.name]: e.target.value }))}
+                        disabled={isSubmitting}
+                    />
+
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border sticky top-8 shadow-sm">
                         <h3 className="font-semibold mb-6 text-xl">Resumen</h3>
                         <div className="space-y-4 text-sm mb-8">
@@ -297,6 +317,50 @@ export default function CartPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+        </div>
+    )
+}
+
+function ShippingForm({
+    details,
+    onChange,
+    disabled
+}: {
+    details: any,
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+    disabled: boolean
+}) {
+    return (
+        <div className="space-y-4 border p-4 rounded-lg bg-slate-50 dark:bg-slate-900/50">
+            <h4 className="font-semibold text-sm text-slate-500 uppercase tracking-wider mb-2">Datos de Envío</h4>
+            <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                    <Label htmlFor="name">Nombre Completo</Label>
+                    <Input id="name" name="name" value={details.name} onChange={onChange} disabled={disabled} placeholder="Juan Pérez" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="phone">Teléfono / Celular</Label>
+                    <Input id="phone" name="phone" value={details.phone} onChange={onChange} disabled={disabled} placeholder="70000000" />
+                </div>
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="address">Dirección de Domicilio</Label>
+                <Input id="address" name="address" value={details.address} onChange={onChange} disabled={disabled} placeholder="Av. Principal #123" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                    <Label htmlFor="city">Ciudad</Label>
+                    <Input id="city" name="city" value={details.city} onChange={onChange} disabled={disabled} placeholder="Santa Cruz" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="state">Departamento/Estado</Label>
+                    <Input id="state" name="state" value={details.state} onChange={onChange} disabled={disabled} placeholder="Santa Cruz" />
+                </div>
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="zipCode">Código Postal (Opcional)</Label>
+                <Input id="zipCode" name="zipCode" value={details.zipCode} onChange={onChange} disabled={disabled} placeholder="0000" />
+            </div>
         </div>
     )
 }

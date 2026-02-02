@@ -12,7 +12,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json()
-        const { items, paymentProof, subtotal, total, addressId } = body
+        const { items, paymentProof, subtotal, total, addressId, shippingDetails } = body
 
         if (!items || items.length === 0) {
             return NextResponse.json({ error: "No items in order" }, { status: 400 })
@@ -26,39 +26,38 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "User not found" }, { status: 404 })
         }
 
-        // Generate Order Number (Simple logic)
+        // Generate Order Number
         const orderCount = await prisma.order.count()
         const orderNumber = `ORD-${String(orderCount + 1).padStart(6, '0')}`
 
-        // Create Default Address if not provided (Simplification for MVP)
-        // In a real app, we would validate addressId or create one.
-        // For now, let's look for a default address or create a dummy one if none exists?
-        // Actually, let's assume address/profile is handled separately or just use a placeholder address relation if required.
-        // Schema says Reference to Address is required.
-        // We will create a dummy default address for the user if they don't have one, just to make it work.
-
         let validAddressId = addressId
 
-        if (!validAddressId) {
+        // Create Address from Shipping Details if provided
+        if (shippingDetails) {
+            const newAddress = await prisma.address.create({
+                data: {
+                    userId: user.id,
+                    label: "Dirección de Envío",
+                    name: shippingDetails.name,
+                    phone: shippingDetails.phone,
+                    address: shippingDetails.address,
+                    city: shippingDetails.city,
+                    state: shippingDetails.state,
+                    zipCode: shippingDetails.zipCode || "0000",
+                    isDefault: false // Don't override default unless requested
+                }
+            })
+            validAddressId = newAddress.id
+        } else if (!validAddressId) {
+            // Fallback to default address if exists
             const defaultAddress = await prisma.address.findFirst({
-                where: { userId: user.id }
+                where: { userId: user.id, isDefault: true }
             })
             if (defaultAddress) {
                 validAddressId = defaultAddress.id
             } else {
-                const newAddress = await prisma.address.create({
-                    data: {
-                        userId: user.id,
-                        label: "Principal",
-                        name: user.name || "Usuario",
-                        phone: "0000000000",
-                        address: "Dirección Principal",
-                        city: "Ciudad",
-                        state: "Estado",
-                        zipCode: "0000"
-                    }
-                })
-                validAddressId = newAddress.id
+                // Final fallback if no address provided at all (should not happen with new UI)
+                return NextResponse.json({ error: "Shipping address is required" }, { status: 400 })
             }
         }
 

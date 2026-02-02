@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
-import { writeFile } from "fs/promises"
-import path from "path"
+import { supabase } from "@/lib/supabase"
 
 export async function POST(request: Request) {
     try {
@@ -12,27 +11,35 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "No file received." }, { status: 400 })
         }
 
-        const buffer = Buffer.from(await file.arrayBuffer())
-        const filename = customName || file.name.replaceAll(" ", "_")
+        const buffer = await file.arrayBuffer()
+        const filename = customName || `proof_${Date.now()}_${file.name.replaceAll(" ", "_")}`
 
-        // Ensure uploads directory exists (should be in public for access)
-        const uploadDir = path.join(process.cwd(), "public/uploads")
-        // Note: You might need to check/create dir if not exists, but usually public exists.
-        // For simplicity assuming public exists. Creating uploads if not.
+        // Upload to Supabase Storage
+        const { data, error } = await supabase
+            .storage
+            .from('uploads')
+            .upload(filename, buffer, {
+                contentType: file.type,
+                upsert: true
+            })
 
-        try {
-            await writeFile(path.join(uploadDir, filename), buffer)
-        } catch (e) {
-            // Try creating dir? No, 'public/uploads' might not exist.
-            // But let's assume it works or fail.
+        if (error) {
+            console.error("Supabase storage error:", error)
+            return NextResponse.json({ error: "Upload failed: " + error.message }, { status: 500 })
         }
+
+        // Get Public URL
+        const { data: { publicUrl } } = supabase
+            .storage
+            .from('uploads')
+            .getPublicUrl(filename)
 
         return NextResponse.json({
             message: "Success",
-            url: `/uploads/${filename}`
+            url: publicUrl
         })
-    } catch (error) {
+    } catch (error: any) {
         console.error("Upload error:", error)
-        return NextResponse.json({ error: "Upload failed" }, { status: 500 })
+        return NextResponse.json({ error: "Upload failed " + error.message }, { status: 500 })
     }
 }
