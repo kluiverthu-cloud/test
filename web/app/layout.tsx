@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
 
+import { AdminToggle } from "@/components/admin/AdminToggle";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -28,6 +30,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <AdminToggle />
           </ThemeProvider>
         </AuthProvider>
       </body>

@@ -62,9 +62,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                     </div>
 
                     <div className="flex items-end gap-3 mb-8">
-                        <div className="text-4xl font-bold text-slate-900 dark:text-white">${product.price}</div>
+                        <div className="text-4xl font-bold text-slate-900 dark:text-white">${product.price.toString()}</div>
                         {product.comparePrice && (
-                            <div className="text-lg text-slate-400 line-through mb-1">${product.comparePrice}</div>
+                            <div className="text-lg text-slate-400 line-through mb-1">${product.comparePrice.toString()}</div>
                         )}
                     </div>
 
