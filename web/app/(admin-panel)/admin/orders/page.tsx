@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { ShoppingBag, User, Calendar, CreditCard } from "lucide-react"
+import { OrderActions } from "@/components/admin/OrderActions"
 
 const statusMap: Record<string, { label: string, color: string }> = {
     'PENDING': { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200' },
@@ -52,6 +53,7 @@ export default async function AdminOrdersPage() {
                             <TableHead className="font-bold">Estado</TableHead>
                             <TableHead className="font-bold">Método</TableHead>
                             <TableHead className="font-bold text-right">Total</TableHead>
+                            <TableHead className="font-bold w-[180px]">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -95,12 +97,15 @@ export default async function AdminOrdersPage() {
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-right font-bold text-slate-900 dark:text-white">
-                                    ${parseFloat(order.total).toFixed(2)}
+                                    Bs {parseFloat(order.total).toFixed(2)}
+                                </TableCell>
+                                <TableCell>
+                                    <OrderActions orderId={order.id} currentStatus={order.status} />
                                 </TableCell>
                             </TableRow>
                         )) : (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
                                     No hay pedidos registrados aún.
                                 </TableCell>
                             </TableRow>
