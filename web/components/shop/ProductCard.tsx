@@ -22,7 +22,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 <CardContent className="p-4 flex flex-col h-full">
                     <div className="mb-4">
                         <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100 line-clamp-1 mb-1">{product.name}</h3>
-                        <p className="text-violet-600 dark:text-violet-400 font-bold text-sm">${product.price}</p>
+                        <p className="text-violet-600 dark:text-violet-400 font-bold text-sm">Bs {product.price}</p>
                     </div>
 
                     <div className="aspect-square relative flex items-center justify-center mb-6 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
@@ -44,17 +44,7 @@ export function ProductCard({ product }: ProductCardProps) {
                     </div>
 
                     <div className="mt-auto flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                        <div className="flex">
-                            {[1, 2, 3, 4, 5].map((s) => (
-                                <Star
-                                    key={s}
-                                    size={10}
-                                    fill={s <= Math.round(product.rating) ? "currentColor" : "none"}
-                                    className={s <= Math.round(product.rating) ? "text-slate-900 dark:text-slate-100" : "text-slate-300"}
-                                />
-                            ))}
-                        </div>
-                        <span className="text-[10px] ml-1">({product.reviewCount})</span>
+                        {/* Rating removed per request */}
                     </div>
                 </CardContent>
             </Card>

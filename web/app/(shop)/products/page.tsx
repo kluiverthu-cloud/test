@@ -1,5 +1,6 @@
 import { ProductCard } from "@/components/shop/ProductCard"
 import { products } from "@/lib/mock-data"
+import { HeroCarousel } from "@/components/shop/HeroCarousel"
 
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ categoryId?: string }> }) {
@@ -17,6 +18,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
     return (
         <div className="p-6 md:p-8">
+            <HeroCarousel />
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {products.length > 0 ? (
                     products.map((product: any) => (
