@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { signIn, getSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Github, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,8 @@ export default function AuthPage() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const callbackUrl = searchParams.get("callbackUrl") || "/"
 
     const [formData, setFormData] = useState({
         email: "",
@@ -38,13 +40,17 @@ export default function AuthPage() {
                 if (res?.error) {
                     setError("Credenciales inválidas")
                 } else {
-                    const session = await getSession()
-                    if (session?.user?.role === 'ADMIN') {
-                        router.push("/admin/products")
-                    } else {
-                        router.push("/")
-                    }
+                    // Force session update
                     router.refresh()
+
+                    // Simple redirect logic - we can't fully trust getSession immediately after login without a reload
+                    // But we can try to redirect based on optimized assumption or just to home/callback
+                    if (searchParams.get("callbackUrl")) {
+                        window.location.href = searchParams.get("callbackUrl")!
+                    } else {
+                        // Default to home, but force a hard reload to ensure session cookies are set
+                        window.location.href = "/"
+                    }
                 }
             } else {
                 // Register

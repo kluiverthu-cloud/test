@@ -2,9 +2,15 @@ import { ProductCard } from "@/components/shop/ProductCard"
 import { products } from "@/lib/mock-data"
 
 
-export default async function ProductsPage() {
-    // Fetch products from our brand new API
-    const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/products`, {
+export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ categoryId?: string }> }) {
+    const { categoryId } = await searchParams
+
+    // Build query URL
+    const apiUrl = new URL(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/products`)
+    if (categoryId) apiUrl.searchParams.set('categoryId', categoryId)
+
+    // Fetch products
+    const response = await fetch(apiUrl.toString(), {
         cache: 'no-store' // Keep it fresh
     })
     const products = await response.json()

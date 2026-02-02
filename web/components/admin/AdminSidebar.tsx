@@ -30,11 +30,6 @@ const adminRoutes = [
         icon: ShoppingCart,
     },
     {
-        href: "/admin/users",
-        label: "Usuarios",
-        icon: Users,
-    },
-    {
         href: "/admin/settings",
         label: "Configuración",
         icon: Settings,

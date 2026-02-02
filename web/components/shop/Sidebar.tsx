@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
+import { usePathname } from "next/navigation"
 import { Search, Home, ShoppingCart, Heart, Bell, Settings, Menu, Info, Phone, Download, LogOut, User as UserIcon, LayoutDashboard, LogIn } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -13,15 +14,29 @@ import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
 
 export function Sidebar({ className }: { className?: string }) {
+    const pathname = usePathname()
     const { data: session } = useSession()
     const [categories, setCategories] = useState<any[]>([])
 
     useEffect(() => {
         fetch('/api/categories')
             .then(res => res.json())
-            .then(data => setCategories(data))
-            .catch(err => console.error("Error loading categories:", err))
+            .then(data => {
+                if (Array.isArray(data)) {
+                    setCategories(data)
+                } else {
+                    // Silently fail to empty array if data is invalid
+                    setCategories([])
+                }
+            })
+            .catch(err => {
+                console.error("Error loading categories:", err)
+                setCategories([])
+            })
     }, [])
+
+    // Don't show sidebar on auth page
+    if (pathname === '/auth') return null
 
     return (
         <div className={cn("pb-12 h-screen border-r bg-background", className)}>
@@ -30,94 +45,29 @@ export function Sidebar({ className }: { className?: string }) {
                     <span className="text-primary">*</span> XyloTech
                 </div>
 
-                <div className="flex items-center justify-between px-2 mb-8">
-                    {session ? (
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600">
-                                <UserIcon size={20} />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-sm font-bold truncate max-w-[100px]">{session.user?.name}</span>
-                                <button onClick={() => signOut()} className="text-[10px] text-red-500 hover:underline text-left">Cerrar Sesión</button>
-                            </div>
-                        </div>
-                    ) : (
-                        <Link href="/auth" className="w-full">
-                            <Button variant="outline" size="sm" className="w-full gap-2 rounded-xl">
-                                <LogIn size={16} /> Iniciar Sesión
-                            </Button>
-                        </Link>
-                    )}
-                </div>
-
-                <div className="space-y-1 mb-6">
-                    <NavLink icon={<Home size={20} />} href="/" label="Home" active />
-                    {session?.user?.role === 'ADMIN' && (
-                        <NavLink icon={<LayoutDashboard size={20} />} href="/admin/products" label="Panel Admin" />
-                    )}
-                    <NavLink icon={<ShoppingCart size={20} />} href="/cart" label="Carrito" />
-                    <NavLink icon={<Heart size={20} />} href="/profile/favorites" label="Favoritos" />
-                    <NavLink icon={<Bell size={20} />} href="/notifications" label="Notification" />
-                    <NavLink icon={<Settings size={20} />} href="/settings" label="Settings" />
-                </div>
-
-                <div className="px-2 mb-6">
-                    <div className="relative">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input type="search" placeholder="Search" className="pl-9 rounded-xl bg-slate-50 border-0" />
-                    </div>
-                </div>
-
-                <div className="mb-6">
+                <div className="mb-8">
                     <h3 className="mb-2 px-2 text-sm font-semibold tracking-tight">
                         Categories
                     </h3>
                     <div className="space-y-1">
-                        {categories.map((cat) => (
-                            <Button key={cat.id} variant="ghost" className="w-full justify-start font-normal">
-                                <span className="mr-2">{cat.name}</span>
+                        <Link href="/products">
+                            <Button variant="ghost" className={cn("w-full justify-start font-normal", !new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('categoryId') && "bg-slate-100 dark:bg-slate-800")}>
+                                <span className="mr-2">Todos</span>
                             </Button>
+                        </Link>
+                        {categories.map((cat) => (
+                            <Link key={cat.id} href={`/products?categoryId=${cat.id}`}>
+                                <Button variant="ghost" className="w-full justify-start font-normal">
+                                    <span className="mr-2">{cat.name}</span>
+                                </Button>
+                            </Link>
                         ))}
                     </div>
                 </div>
 
-                <div className="mb-6">
-                    <h3 className="mb-4 px-2 text-sm font-semibold tracking-tight">Filter by</h3>
-
-                    <div className="px-2 mb-4">
-                        <label className="text-xs font-medium mb-3 block">Price</label>
-                        <Slider defaultValue={[120, 2000]} max={3000} step={10} className="mb-2" />
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>Min: $120</span>
-                            <span>Max: $2000</span>
-                        </div>
-                    </div>
-
-                    <div className="px-2 mb-4">
-                        <label className="text-xs font-medium mb-3 block">Color</label>
-                        <div className="flex gap-2">
-                            {['bg-blue-200', 'bg-slate-100', 'bg-blue-600', 'bg-black', 'bg-yellow-400', 'bg-red-400', 'bg-orange-400'].map((color, i) => (
-                                <div key={i} className={`h-4 w-4 rounded-full ${color} cursor-pointer border border-slate-200 hover:ring-2 ring-primary/50 transition-all`}></div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="px-2">
-                        <label className="text-xs font-medium mb-3 block">Material</label>
-                        <div className="flex flex-wrap gap-2">
-                            {['Metal', 'Wood', 'Glass', 'Stone', 'Acrylic'].map((mat) => (
-                                <Badge key={mat} variant="outline" className="font-normal cursor-pointer hover:bg-accent">{mat}</Badge>
-                            ))}
-                        </div>
-                    </div>
+                <div className="space-y-1">
+                    <NavLink icon={<ShoppingCart size={20} />} href="/cart" label="Carrito" />
                 </div>
-
-                <div className="mt-8 space-y-1">
-                    <NavLink href="/about" label="About" icon={<Info size={20} />} />
-                    <NavLink href="/contact" label="Contact us" icon={<Phone size={20} />} />
-                    <NavLink href="/app" label="Download app" icon={<Download size={20} />} />
-                </div>
-
             </ScrollArea>
         </div>
     )

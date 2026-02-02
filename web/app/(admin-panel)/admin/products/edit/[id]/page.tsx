@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useRouter } from "next/navigation"
-import { ArrowLeft, Save, Upload, X, Plus } from "lucide-react"
+import { useRouter, useParams } from "next/navigation"
+import { ArrowLeft, Save, Upload, X, Trash, Plus } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,55 +10,78 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 
-export default function NewProductPage() {
+export default function EditProductPage() {
     const router = useRouter()
+    const params = useParams()
     const [loading, setLoading] = useState(false)
+    const [fetching, setFetching] = useState(true)
     const [categories, setCategories] = useState<any[]>([])
     const [brands, setBrands] = useState<any[]>([])
 
     // File upload
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [uploading, setUploading] = useState(false)
-    const [images, setImages] = useState<string[]>([])
 
     // Form state
     const [formData, setFormData] = useState({
         name: "",
-        slug: "",
+        slug: "", // Will be auto-generated or kept hidden
         description: "",
         price: "",
         stock: "",
         categoryId: "",
         brandId: "",
-        isNew: true,
+        isNew: false,
         isFeatured: false,
-        isActive: true, // Default to true
+        isActive: true,
         specs: "{}"
     })
+    const [images, setImages] = useState<string[]>([])
 
     useEffect(() => {
+        setFetching(true)
         Promise.all([
             fetch('/api/categories').then(res => res.json()),
-            fetch('/api/brands').then(res => res.json())
-        ]).then(([cats, brs]) => {
+            fetch('/api/brands').then(res => res.json()),
+            fetch(`/api/products/${params.id}`).then(res => {
+                if (!res.ok) throw new Error("Product not found")
+                return res.json()
+            })
+        ]).then(([cats, brs, product]) => {
             setCategories(cats)
             setBrands(brs)
+
+            setFormData({
+                name: product.name,
+                slug: product.slug,
+                description: product.description || "",
+                price: product.price,
+                stock: product.stock,
+                categoryId: product.categoryId,
+                brandId: product.brandId,
+                isNew: product.isNew,
+                isFeatured: product.isFeatured,
+                isActive: product.isActive,
+                specs: JSON.stringify(product.specs || {}, null, 2)
+            })
+            setImages(product.images || [])
+            setFetching(false)
         }).catch(err => {
-            console.error(err)
-            toast.error("Error cargando categorías")
+            console.error("Error loading data:", err)
+            toast.error("Error cargando el producto")
+            router.push('/admin/products')
         })
-    }, [])
+    }, [params.id, router])
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target
-        setFormData(prev => {
-            const updated = { ...prev, [name]: value }
-            // Auto-slug
-            if (name === "name") {
-                updated.slug = value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
-            }
-            return updated
-        })
+        setFormData(prev => ({ ...prev, [name]: value }))
+
+        // Auto-slug from name if needed (hidden field update)
+        if (name === "name") {
+            const slug = value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+            setFormData(prev => ({ ...prev, name: value, slug }))
+        }
     }
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,17 +131,18 @@ export default function NewProductPage() {
                 price: parseFloat(formData.price),
                 stock: parseInt(formData.stock),
                 images,
+                // Simplify specs or empty
                 specs: {}
             }
 
-            const res = await fetch('/api/products', {
-                method: 'POST',
+            const res = await fetch(`/api/products/${params.id}`, {
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(productData)
             })
 
             if (res.ok) {
-                toast.success("Producto creado correctamente")
+                toast.success("Producto actualizado correctamente")
                 router.push('/admin/products')
                 router.refresh()
             } else {
@@ -126,11 +150,15 @@ export default function NewProductPage() {
                 toast.error(`Error: ${err.details || err.error}`)
             }
         } catch (error) {
-            console.error("Submit error:", error)
-            toast.error("Ocurrió un error al crear el producto.")
+            console.error("Update error:", error)
+            toast.error("Ocurrió un error al actualizar.")
         } finally {
             setLoading(false)
         }
+    }
+
+    if (fetching) {
+        return <div className="p-8 text-center flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div></div>
     }
 
     return (
@@ -142,8 +170,8 @@ export default function NewProductPage() {
                     </Link>
                 </Button>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Nuevo Producto</h1>
-                    <p className="text-muted-foreground">Añade un nuevo artículo al catálogo.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Editar Producto</h1>
+                    <p className="text-muted-foreground">Modifica los detalles del producto.</p>
                 </div>
             </div>
 
@@ -152,9 +180,9 @@ export default function NewProductPage() {
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border shadow-sm space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="name">Nombre del Producto</Label>
-                            <Input id="name" name="name" placeholder="Ej: Monitor Gamer" value={formData.name} onChange={handleInputChange} required />
+                            <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required />
                         </div>
-                        {/* Hidden Slug */}
+                        {/* Slug hidden */}
                         <div className="space-y-2">
                             <Label htmlFor="description">Descripción</Label>
                             <textarea
@@ -162,7 +190,6 @@ export default function NewProductPage() {
                                 name="description"
                                 rows={6}
                                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                placeholder="Describe las características principales..."
                                 value={formData.description}
                                 onChange={handleInputChange}
                             ></textarea>
@@ -189,7 +216,7 @@ export default function NewProductPage() {
                         {images.length === 0 ? (
                             <div className="text-center py-10 border-2 border-dashed rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-400">
                                 <Upload className="mx-auto h-10 w-10 mb-2 opacity-50" />
-                                <p className="text-sm">No hay imágenes. Sube algunas fotos.</p>
+                                <p className="text-sm">No hay imágenes. Sube algunas fotos del producto.</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
@@ -221,11 +248,11 @@ export default function NewProductPage() {
                         <h3 className="font-semibold">Inventario y Precio</h3>
                         <div className="space-y-2">
                             <Label htmlFor="price">Precio (Bs)</Label>
-                            <Input id="price" name="price" type="number" step="0.01" placeholder="0.00" value={formData.price} onChange={handleInputChange} required />
+                            <Input id="price" name="price" type="number" step="0.01" value={formData.price} onChange={handleInputChange} required />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="stock">Stock inicial</Label>
-                            <Input id="stock" name="stock" type="number" placeholder="0" value={formData.stock} onChange={handleInputChange} required />
+                            <Label htmlFor="stock">Stock</Label>
+                            <Input id="stock" name="stock" type="number" value={formData.stock} onChange={handleInputChange} required />
                         </div>
                     </div>
 
@@ -290,9 +317,13 @@ export default function NewProductPage() {
                     </div>
 
                     <Button type="submit" className="w-full h-12 bg-violet-600 hover:bg-violet-700 text-white" disabled={loading}>
-                        {loading ? "Guardando..." : (
+                        {loading ? (
                             <>
-                                <Save className="h-4 w-4 mr-2" /> Guardar Producto
+                                <div className="animate-spin mr-2 h-4 w-4 border-b-2 border-white rounded-full"></div> Guardando...
+                            </>
+                        ) : (
+                            <>
+                                <Save className="h-4 w-4 mr-2" /> Guardar Cambios
                             </>
                         )}
                     </Button>

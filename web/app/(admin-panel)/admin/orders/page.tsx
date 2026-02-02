@@ -77,9 +77,21 @@ export default async function AdminOrdersPage() {
                                     </span>
                                 </TableCell>
                                 <TableCell>
-                                    <div className="flex items-center gap-2 text-xs font-medium">
-                                        <CreditCard size={14} className="text-slate-400" />
-                                        {order.paymentMethod === 'QR_PAYMENT' ? 'Pago QR' : order.paymentMethod}
+                                    <div className="flex flex-col gap-1 text-xs font-medium">
+                                        <div className="flex items-center gap-2">
+                                            <CreditCard size={14} className="text-slate-400" />
+                                            {order.paymentMethod === 'QR_PAYMENT' ? 'Pago QR' : order.paymentMethod}
+                                        </div>
+                                        {order.paymentProof && (
+                                            <a
+                                                href={order.paymentProof}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-violet-600 hover:underline flex items-center gap-1"
+                                            >
+                                                Ver Comprobante
+                                            </a>
+                                        )}
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-right font-bold text-slate-900 dark:text-white">

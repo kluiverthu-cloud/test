@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        const { searchParams } = new URL(request.url)
+        const categoryId = searchParams.get("categoryId")
+
+        const where: any = {}
+        if (categoryId) {
+            where.categoryId = categoryId
+        }
+
         const products = await prisma.product.findMany({
+            where,
             include: {
                 category: true,
                 brand: true,

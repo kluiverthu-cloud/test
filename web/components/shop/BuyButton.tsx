@@ -3,27 +3,27 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { useCartStore, CartItem } from "@/lib/store/cart"
+import { toast } from "sonner"
 
 export function BuyButton({
+    product,
     variant = "default",
     children,
     className
 }: {
+    product: CartItem,
     variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive",
     children: React.ReactNode,
     className?: string
 }) {
-    const { data: session } = useSession()
+    const addItem = useCartStore(state => state.addItem)
     const router = useRouter()
 
     const handleAction = () => {
-        if (!session) {
-            router.push("/auth")
-            return
-        }
-
-        // Aquí iría la lógica de agregar al carrito o comprar
-        alert("En desarrollo: Agregando al carrito...")
+        addItem(product)
+        toast.success("Producto agregado al carrito")
+        router.push("/cart")
     }
 
     return (
